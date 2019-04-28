@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * CountDownLatch
  * 1.并发中控制多线程，当每个线程都完成后才继续跑下去
  */
-public class CountDownLatchTest {
+public class CountDownLatchDemo {
 
     private volatile static CountDownLatch cdl = new CountDownLatch(10);
 

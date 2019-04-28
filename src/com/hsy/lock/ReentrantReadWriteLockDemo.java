@@ -21,7 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *  3.1 它的读锁是共享锁，写锁是独占锁
  *  3.2 读锁的共享锁可以保证并发读是高效率的，读写、写读、写写这三个过程是互斥的
  */
-public class ReentrantReadWriteLockTest {
+public class ReentrantReadWriteLockDemo {
 
 //    Lock lock = new ReentrantReadWriteLock();
     public static void main(String[] args) {
