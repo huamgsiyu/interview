@@ -1,0 +1,83 @@
+线程池用过吗？ThreadPoolExecutor谈谈你的理解？
+
+1、单核cpu和多核cpu在多线程中的区别
+    1.1 单核cpu在多线程环境中需要频繁切换上下文，以达到多线程工作
+        多核cpu在多线程环境中不需要频繁切换上下文，单个线程可以独占一个cpu，节约了切换上下文的时间
+
+    1.2 例子：一个人需要完成四件事情，模拟多线程环境，如果在正在做其中一件事，另一件事也需要他去做，那么就需要切换，去做另外一件事情；
+        四个人要完成四件事情，模拟多线程环境，每个人只需要专注于一件事情，然后完成它即可。
+
+2、为什么要用线程池，有什么优势？
+    2.1 线程池：线程池做的工作主要是控制运行的线程的数量，处理过程中将任务放入队列，然后在线程创建后启动这些任务，如果
+        线程数量超过了最大数量，超出数量的线程排队等候其他线程执行完毕，再从队列中取出任务来执行。
+
+    2.2 线程池的特点：
+        2.2.1 线程复用
+        2.2.2 控制最大并发数
+        2.2.3 管理线程
+
+    2.3 使用线程池的优势
+        2.3.1 降低资源消耗。通过重复利用已创建的线程降低线程创建和销毁造成的消耗；
+        2.3.2 提高响应速度。当任务到达时，任务可以不需要等待线程创建就能够立即执行；
+        2.3.3 提高线程的客观理性。线程是稀缺资源，如果无限制的创建，不仅会消耗系统资源，
+            还会降低系统的稳定性，使用线程池可以进行统一的分配，调优和监控；
+3、线程池如何使用？常用的三种方式，它们的底层是什么？ThreadPoolExecutor
+    3.1 Executors.newFixedThreadPool(int)--一个线程池，固定多少个线程；
+    3.2 Executors.newSingleThreadExecutor()--一个线程池，一个线程
+    3.3 Executors.newCachedThreadPool()--一个线程池，自动进行线程扩充的线程池
+4、线程池的几个重要参数介绍一下？7大参数(参考银行网点理解)
+    4.1 corePoolSize->线程池中的常驻核心线程数
+    4.2 maximumPoolSize->线程池能够容纳同时执行的最大线程数，此值必须大于等于1
+    4.3 keepAliveTime->多余的空闲线程的存活时间，当前线程池数量超过corePoolSize时，当空闲时间达到keepAliveTime
+        值时，多余空闲线程会被销毁直到只剩下corePoolSize个线程为止
+    4.4 unit->keepAliveTime的单位
+    4.5 workQueue->任务队列，被提交但尚未执行的任务
+    4.6 threadFactory->表示生成线程池中工作线程的线程工厂，用于创建线程，一般用默认
+    4.7 handler->拒绝策略，表示当队列满了并且工作线程大于等于线程池的最大线程
+    public ThreadPoolExecutor(int corePoolSize,
+                                  int maximumPoolSize,
+                                  long keepAliveTime,
+                                  TimeUnit unit,
+                                  BlockingQueue<Runnable> workQueue,
+                                  ThreadFactory threadFactory,
+                                  RejectedExecutionHandler handler) {
+            if (corePoolSize < 0 ||
+                maximumPoolSize <= 0 ||
+                maximumPoolSize < corePoolSize ||
+                keepAliveTime < 0)
+                throw new IllegalArgumentException();
+            if (workQueue == null || threadFactory == null || handler == null)
+                throw new NullPointerException();
+            this.acc = System.getSecurityManager() == null ?
+                    null :
+                    AccessController.getContext();
+            this.corePoolSize = corePoolSize;
+            this.maximumPoolSize = maximumPoolSize;
+            this.workQueue = workQueue;
+            this.keepAliveTime = unit.toNanos(keepAliveTime);
+            this.threadFactory = threadFactory;
+            this.handler = handler;
+        }
+5、说说线程池的底层工作原理？
+    5.1 在创建了线程池后，等待提交过来的任务请求
+    5.2 当调用execute()方法添加一个请求任务时，线程池将会做如下判断：
+        5.2.1 如果正在运行的线程数量小于corePoolSize，那么马上创建线程运行这个任务；
+        5.2.2 如果正在运行的线程数量大于或等于corePoolSize，那么将这个任务放入队列；
+        5.2.3 如果这时候队列满了且正在运行的线程数量还小于maximumPoolSize，那么还是要创建非核心线程，立即运行这个任务；
+        5.2.4 如果队列满了且正在运行的线程数量大于或等于maximumPoolSize，那么线程池会启动饱和拒绝策略来执行；
+    5.3 当一个线程完成任务时，它会从队列中取下一个任务来执行；
+    5.4 当一个线程无事可做且超过一定的时间(keepAliveTime)时，线程池会判断：
+        5.4.1 如果当前运行的线程数大于corePoolSize，那么这个线程就会被停掉；
+        5.4.2 所以线程池的所有任务完成后它最终会收缩到corePoolSize的大小；
+
+6、线程池拒绝策略
+    6.1 什么时候线程池会拒绝请求，满足以下两种情况：
+        6.1.1 线程数大于等于miximumPoolSize
+        6.1.2 队列已经满了
+    6.2 4种拒绝策略
+        6.2.1 AbortPolicy(默认为这个策略)：直接抛出RejectedExecutionException异常阻止系统正常运行；
+        6.2.2 CallerRunsPolicy：“调用者运行”一种调节机制，该策略既不会抛弃任务，也不会抛出异常，而是将某些任务回退到调用者，从而降低新任务的流量；
+        6.2.3 DiscardOldstPolicy：抛弃队列中等待最久的任务，然后把当前任务加入队列中尝试再次提交当前任务；
+        6.2.4 DiscardPolicy：直接丢弃任务，不予任何处理也不抛异常。如果允许任务丢失，这是最好的一种方案；
+
+
