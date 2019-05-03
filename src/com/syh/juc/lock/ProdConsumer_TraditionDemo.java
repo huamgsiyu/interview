@@ -1,4 +1,4 @@
-package com.hsy.queue;
+package com.syh.juc.lock;
 
 /**
  * @author hsy
@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ProdConsumer_TraditionDemo {
 
     public static void main(String[] args) {
-        ShareData shareData = new ShareData();
+        ShareData1 shareData = new ShareData1();
 
         new Thread(() -> {
             for (int i = 0; i < 5; i++) {
@@ -48,7 +48,7 @@ public class ProdConsumer_TraditionDemo {
     }
 }
 
-class ShareData{
+class ShareData1{
     private int i = 0;
     private Lock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();

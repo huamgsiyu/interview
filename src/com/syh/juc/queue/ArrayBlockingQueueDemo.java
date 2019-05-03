@@ -1,4 +1,4 @@
-package com.hsy.queue;
+package com.syh.juc.queue;
 
 /**
  * @author hsy

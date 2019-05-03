@@ -1,11 +1,9 @@
-package com.hsy.lock;
+package com.syh.juc.lock;
 
 /**
  * @author hsy
  * @createtime 2019/4/26 8:22
  */
-
-import lombok.Getter;
 
 /**
  * 枚举类Demo，可以保存一些不尝变的值，很方便。

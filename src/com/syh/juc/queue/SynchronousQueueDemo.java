@@ -1,4 +1,4 @@
-package com.hsy.queue;
+package com.syh.juc.queue;
 
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;

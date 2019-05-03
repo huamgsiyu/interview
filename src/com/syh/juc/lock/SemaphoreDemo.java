@@ -1,4 +1,4 @@
-package com.hsy.lock;
+package com.syh.juc.lock;
 
 /**
  * @author hsy

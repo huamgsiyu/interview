@@ -1,0 +1,17 @@
+
+Runnable和Callable的区别：
+1、Runnable接口没有返回值，Callable有返回值；
+
+2、接口实现的方法不一样，一个是run()，一个是call()
+
+3、Runnable的run()方法不会抛异常，Callable的call()方法会抛异常；
+
+
+多线程使用的是四种方式：
+1、继承Thread类
+
+2、实现Runnable接口
+
+3、实现Callable接口
+
+4、实现线程池
