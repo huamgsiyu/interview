@@ -1,0 +1,20 @@
+1、请谈谈你对JVM的理解？Java8版有什么了解？
+    面试官想知道的是你对JV体系结构了解程度
+2、谈谈JVM中你对ClassLoader类加载器的认识？
+
+3、谈谈你对类装载器的双亲委派机制了解？
+    某个特定的类加载器在接到加载器的请求时，首先将加载任务委托给父类
+        加载器，依次递归，如果父类加载器可以完成类加载任务，就成功返
+        回；只有父类加载器无法完成此加载任务时，才自己去加载。
+4、什么是沙箱机制？
+    防止恶意代码对java的破坏
+
+5、什么是OOM？写代码使得分别出现StackOverflowError和OutOfMemoryError
+
+6、JVM的常用参数调优你了解吗？
+
+7、内存快照抓取和MAT分析hprof文件干过吗？
+    7.1 eclipse使用MAT插件，然后配置项目run configuration以下参数：
+        -Xms1m -Xmx10m -XX:+HeapDumpOnOutOfMemoryError
+    7.2 idea中使用Jprofiler插件，并配置项目run configuration以下参数：
+        -Xms1m -Xmx10m -XX:+HeapDumpOnOutOfMemoryError

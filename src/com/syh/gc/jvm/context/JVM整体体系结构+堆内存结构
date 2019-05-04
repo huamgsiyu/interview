@@ -1,0 +1,150 @@
+1、JVM的位置
+    Java Virtual Machine
+        |       ^
+        v       |
+    操作系统（Windows/Linux等）
+        |       ^
+        v       |
+    硬件体系（如Intel体系、SPAC等）
+
+JVM是运行在操作系统之上的，它与硬件没有直接的交互
+
+2、JVM体系结构
+                    Class files->类加载器子系统
+                                    |   ^
+                                    v   |
+                          运行时数据区(Runtime Data Area)
+    ------------------------------------------------------------
+    |   方法区             Java栈       本地方法栈               |
+    |   (Method Area)   (Java Stack)    (Native Method Stack)  |
+    |                                                          |
+    |    堆(Heap)              程序计数器                       |
+    |   (Heap)          (Program Counter Register)             |
+    |                                                          |
+    ------------------------------------------------------------
+            |      ^                           |       ^
+            v      |                           v       |
+            执行引擎           -->            本地方法接口            -->本地方法库
+       (Execution Engine)     <--          (Native Interface)
+
+    1.1 类加载器
+        1.1.1 虚拟机自带的加载器
+            启动类加载器(Bootstrap) C++
+            扩展类加载器(Extension) Java
+            应用程序类加载器，也叫系统类加载器，加载当前应用的classpath的所有类
+
+        1.1.2 用户自定义加载器
+            Java.lang.ClassLoader的子类，用户可以定制类的加载方式
+
+        1.1.3 虚拟机类加载器继承图
+                Bootstrap ClassLoader       $JAVAHOME/jre/lib/rt.jar
+                         ^
+                         |
+                Extension ClassLoader       $JAVAHOME/jre/lib/ext/*.jar
+                         ^
+                         |
+                System ClassLoader          $CLASSPATH
+                         ^
+                         |
+                User-Defined ClassLoader    用户自定义类加载器
+
+
+
+
+    1.2 运行时数据区
+
+    1.3 PC寄存器
+        1.3.1 定义：每个线程都有一个程序计数器，是线程私有的，就是一个指针，指向方法取中的方法字节码（用来存储指向下一条指令的地址，也就是将要执行的指令代码），
+            由执行引擎读取下一条指令，是一个非常小的内存空间，几乎可以忽略不计。
+
+
+    1.4 Java栈
+        1.4.1 定义：栈也叫做栈内存，主管Java程序的运行，实在线程创建时创建，它的生命期是跟随线程的生命期，
+            线程结束栈内存也就释放，对于栈来说不存在立即回收问题，只要线程一结束该栈就Over，生命周期和线程一致，
+            是线程私有的。基本类型的变量、实例方法、引用类型变量都是在函数的栈内存中分配。
+
+        1.4.2 Exception in thread "main" Java.lang.StackOverflowError
+
+    1.5 Java堆
+        1.5.1 JDK1.7之前：一个JVM实例只存在一个堆内存，堆内存的大小是可以调节的。类加载器读取了类文件后，需要把
+            类、方法、常变量放到堆内存中，保证所有引用类型的真实信息，以方便执行器指定。
+
+            堆内存逻辑上分为三部分：新生+养老+永久
+                新       伊甸区(Eden Space)
+                生       幸存0区(Survivor 0 Space)
+                区       幸存1区(Survivor 1 Space)
+
+                         养老区(Tenure Generation Space)
+
+                         永久存储区(Permanent Space)
+
+        新生去是类的诞生、成长、消亡的区域，一个类在这里产生，应用，最后被垃圾回收器收集，结束生命。新生区又分为两个区域：
+            伊甸区和幸存区，所有的类都是在伊甸区被new出来的。幸存区有两个：0区和1区。当伊甸园的空间用完时，程序又需要创建对象，JVM的
+            垃圾回收将对伊甸区进行垃圾回收（Minor GC:轻量级GC），将伊甸区中的不再被其他对象引用的对象进行销毁。然后将伊甸区的剩余对象转移到幸存0区。若幸存
+            0区也满了，再对该区进行垃圾回收，把剩下的对象转移到幸存1区。如果1区也满了，再移动到养老区。如果养老区也满了，那么这个时候将产生MajorGC(Full GC)，
+            进行养老区的内存清理。若养老区执行了Full GC还是无法保存所有的对象，就会产生OOM异常。
+
+        如果出现了Java.lang.OutOfMemoryError：java heap space异常，说明Java虚拟机的堆内存不够，原因有二：
+            （1）Java虚拟机的堆内存设置不够，可以通过设置参数-Xms/-Xmx来调整；
+            （2）代码中创建了大量大对象，并且长时间不能够被垃圾收集器收集（存在被引用）；
+    1.6 方法区
+        1.6.1 方法区是线程共享的，通常用来保存装载的类的元结构信息。
+            比如：运行时常量池+静态变量+常量+字段+方法字节码+在类/实例/接口初始化用到的特殊方法等。
+
+        1.6.2 通常和永久区关联在一起（Java7之前），但具体的跟JVM的实现和版本有关。
+
+    1.7 元空间
+
+    1.8 运行时常量池
+
+    1.9 本地方法栈（native方法放在本地方法栈中，通过native Interface调用其它语言）
+        1.9.1 Native Interface本地接口：
+            Java语言本身不能对操作系统底层进行访问和操作，但是可以通过JNI接口调用其它语言来实现对底层的访问。
+
+            本地接口的租用是融合不同的编程语言为Java所用，它的初衷是融合C/C++程序，Java诞生的时候是C/C++横
+                行的时候，为了立足，必须有调用C/C++程序，于是就再内存中专门开辟了一块区域处理标记为Native的代码，
+                它的具体做法是Native Method Stack中登记的Native方法，在Execution Engine执行时加载Native libraries。
+
+            目前该方法使用的越来越少了，除非是与硬件有关的应用，比如通过Java程序驱动打印机或者Java系统管理生产设备，
+                在企业级应用中已经比较少见。因为现在的异构领域问题间的通信很发达，比如可以使用Socket通信，也可以使用WebService
+                等等。
+
+        1.9.2 Native Method Stack
+            它的具体做法是Native Method Stack中登记native方法，在Execution Engine执行时加载本地方法库。
+
+1、堆内存结构
+    1.1 堆内存
+        1.1.1 Java7
+
+        <-Minor GC->         <---Major GC------>
+        -----------------------------------------------------
+        |   Eden   | S0 | S1 |    Old Memory   |    Perm    |
+        -----------------------------------------------------
+        <-------JVM Heap(-Xms -Xms)----------->
+                                                -XX:PermSize
+        <---Young Gen(-Xmn)-->                  -XX:MaxPermSize
+
+        1.1.2 Java8
+
+         <-Minor GC->         <---Major GC------>
+        -----------------------------------------------------
+        |   Eden   | S0 | S1 |    Old Memory   |    元空间   |
+        -----------------------------------------------------
+        <-------JVM Heap(-Xms -Xms)----------->
+
+        <---Young Gen(-Xmn)-->
+    1.2 非堆内存
+       1.2.1 Java7
+            永久区（Perm）
+
+       1.2.2 Java8
+            元空间（Metaspace）
+
+    1.3 常用简单参数在堆内存的调优
+        1.3.1 -Xms：设置初始分配大小，默认为物理内存的1/64
+            Runtime.getRuntime().totalMemory();
+        1.3.2 -Xmx：最大分配内存，默认为物理内存的1/4
+            Runtime.getRuntime().maxMemory();
+
+        1.3.3 设置运行JVM配置（-XX:+PrintGCDetails表示打印JVM GC细节）
+            -Xms1024m -Xmx1024m -XX:+PrintGCDetails
